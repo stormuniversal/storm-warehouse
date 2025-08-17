@@ -1,0 +1,10 @@
+.logo-box{
+  display:inline-block;
+  width:28px;height:28px;
+  background: linear-gradient(135deg,#000,#7b0000);
+  color:#fff;
+  border-radius:6px;
+  text-align:center; line-height:28px; font-weight:700;
+  margin-right:8px;
+}
+.table td, .table th { vertical-align: middle; }

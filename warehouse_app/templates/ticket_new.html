@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3 class="mb-3">Новая заявка</h3>
+<form method="post">
+  {{ form.hidden_tag() }}
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      {{ form.project_name.label(class="form-label") }}
+      {{ form.project_name(class="form-control") }}
+    </div>
+    <div class="col-md-6 mb-3">
+      {{ form.applicant_name.label(class="form-label") }}
+      {{ form.applicant_name(class="form-control") }}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      {{ form.applicant_phone.label(class="form-label") }}
+      {{ form.applicant_phone(class="form-control") }}
+    </div>
+    <div class="col-md-12 mb-3">
+      {{ form.description.label(class="form-label") }}
+      {{ form.description(class="form-control", rows="3") }}
+    </div>
+  </div>
+  {{ form.submit(class="btn btn-primary") }}
+</form>
+{% endblock %}
