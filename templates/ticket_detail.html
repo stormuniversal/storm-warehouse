@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Заявка #{{ t.id }} — {{ t.project_name }}</h3>
+  <div>
+    {% if current_user.role in ['stockman','admin'] %}
+    <form method="post" class="d-flex align-items-center gap-2">
+      {{ status_form.hidden_tag() }}
+      {{ status_form.status(class="form-select", id='status-select') }}
+      
+      <div id="pickup-extra" class="mt-2" style="display:none">
+        <div class="row g-2">
+          <div class="col-md-6">
+            <input type="text" name="pickup_recipient" placeholder="ФИО получателя" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <input type="file" name="pickup_proof" accept="image/*" class="form-control">
+          </div>
+        </div>
+        <div class="form-text">При выборе «Материал забран» укажите получателя и/или приложите фото-подтверждение.</div>
+      </div>
+      <script>
+        const sel = document.getElementById('status-select');
+        const extra = document.getElementById('pickup-extra');
+        function toggleExtra(){ extra.style.display = (sel && sel.value === 'Материал забран') ? 'block' : 'none'; }
+        if(sel){ sel.addEventListener('change', toggleExtra); toggleExtra(); }
+      </script>
+    
+      <button name="update_status" value="1" class="btn btn-dark">{{ status_form.submit.label.text }}</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-4"><strong>Заявитель:</strong> {{ t.applicant_name }}</div>
+      <div class="col-md-4"><strong>Телефон:</strong> {{ t.applicant_phone }}</div>
+      <div class="col-md-4"><strong>Текущий статус:</strong> <span class="badge bg-dark">{{ t.status }}</span></div>
+    </div>
+    <div class="text-muted small mt-2">Создана: {{ t.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+    {% if t.pickup_at %}<div class="text-muted small">Материал забран: {{ t.pickup_at.strftime('%Y-%m-%d %H:%M') }}</div>{% endif %}
+    {% if t.pickup_recipient %}<div class="text-muted small">Получатель материалов: {{ t.pickup_recipient }}</div>{% endif %}
+    {% if t.pickup_proof_path %}<div class="text-muted small">Подтверждение: <a href="{{ url_for('uploaded_file', filename=t.pickup_proof_path) }}" target="_blank">файл</a></div>{% endif %}
+    {% if t.closed_at %}<div class="text-muted small">Закрыта: {{ t.closed_at.strftime('%Y-%m-%d %H:%M') }}</div>{% endif %}
+    {% if t.pickup_at %}<div class="text-muted small">Материал забран: {{ t.pickup_at.strftime('%Y-%m-%d %H:%M') }}</div>{% endif %}
+    {% if t.closed_at %}<div class="text-muted small">Закрыта: {{ t.closed_at.strftime('%Y-%m-%d %H:%M') }}</div>{% endif %}
+  </div>
+</div>
+
+<h5 class="mb-2">Комментарии и фото</h5>
+<ul class="list-group mb-3">
+  {% for c in t.comments %}
+    <li class="list-group-item">
+      <div class="d-flex justify-content-between">
+        <div><strong>{{ c.author.username }}</strong> <span class="text-muted small">{{ c.created_at.strftime('%Y-%m-%d %H:%M') }}</span></div>
+      </div>
+      {% if c.text %}<div class="mt-1">{{ c.text }}</div>{% endif %}
+      {% if c.photo_path %}
+        <div class="mt-2">
+          <img src="{{ url_for('uploaded_file', filename=c.photo_path) }}" class="img-fluid rounded border" style="max-height:300px">
+        </div>
+      {% endif %}
+    </li>
+  {% else %}
+    <li class="list-group-item text-muted">Пока нет комментариев</li>
+  {% endfor %}
+</ul>
+
+<h5 class="mb-2">Добавить комментарий</h5>
+<form method="post" enctype="multipart/form-data">
+  {{ comment_form.hidden_tag() }}
+  <div class="mb-2">
+    {{ comment_form.text(class="form-control", rows="3", placeholder="Текст комментария (необязательно)") }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Фото (необязательно)</label>
+    <input type="file" name="photo" accept="image/*" class="form-control">
+  </div>
+  <button class="btn btn-primary" name="add_comment" value="1">{{ comment_form.submit.label.text }}</button>
+
+<h5 class="mb-2">История статусов</h5>
+<table class="table table-sm">
+  <thead>
+    <tr><th>Время</th><th>Пользователь</th><th>Старый статус</th><th>Новый статус</th><th>Примечание</th></tr>
+  </thead>
+  <tbody>
+    {% for h in t.history|sort(attribute='created_at') %}
+      <tr>
+        <td>{{ h.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>{{ h.actor.username if h.actor else '—' }}</td>
+        <td>{{ h.old_status or '—' }}</td>
+        <td>{{ h.new_status }}</td>
+        <td>{{ h.note or '' }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="text-muted">История пока пустая</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</form>
+{% endblock %}

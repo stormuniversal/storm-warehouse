@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Заявки</h3>
+  <div>
+    {% if current_user.role in ['applicant','admin','manager'] %}
+      <a href="{{ url_for('new_ticket') }}" class="btn btn-primary">+ Новая заявка</a>
+    {% endif %}
+    {% if current_user.role == 'admin' %}
+      <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary ms-2">Пользователи</a>
+    {% endif %}
+  </div>
+</div>
+<table class="table table-hover align-middle">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Проект</th>
+      <th>Заявитель</th>
+      <th>Телефон</th>
+      <th>Статус</th>
+      <th>Создана</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in tickets %}
+    <tr onclick="window.location='{{ url_for('ticket_detail', ticket_id=t.id) }}'" style="cursor:pointer">
+      <td>{{ t.id }}</td>
+      <td>{{ t.project_name }}</td>
+      <td>{{ t.applicant_name }}</td>
+      <td>{{ t.applicant_phone }}</td>
+      <td>
+        {% if t.closed_at %}
+          <span class="badge bg-secondary">Закрыта</span>
+        {% else %}
+          <span class="badge bg-dark">{{ t.status }}</span>
+        {% endif %}
+      </td>
+      <td>{{ t.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="text-muted text-center py-5">Пока нет заявок</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
